@@ -21,19 +21,24 @@ def log(message):
 
 
 def fetch_results():
-    log("Starte Abruf von Immobilienscout24")
+    log(f"Rufe Seite ab: {IS24_URL}")
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(IS24_URL, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
     listings = soup.select('[data-obid]')
+    log(f"{len(listings)} Inserate auf der Seite gefunden")
     results = []
+    filtered_out = 0
     for listing in listings:
         obid = listing.get("data-obid")
         title = listing.get_text(" ", strip=True).lower()
         link = f"https://www.immobilienscout24.de/expose/{obid}"
         if not any(kw in title for kw in NO_GO_KEYWORDS):
             results.append((obid, link, title))
-    log(f"{len(results)} passende Ergebnisse gefunden")
+        else:
+            filtered_out += 1
+    log(f"{len(results)} passende Ergebnisse nach No-Go-Filter")
+    log(f"{filtered_out} Inserate aufgrund von No-Go-Keywords herausgefiltert")
     return results
 
 
@@ -67,11 +72,14 @@ def main():
         return
 
     last_ids = load_last_ids()
+    log(f"{len(last_ids)} bekannte Inserate geladen")
+
     current_results = fetch_results()
     new_ids = []
 
     for obid, link, title in current_results:
         if obid not in last_ids:
+            log(f"Neues Inserat entdeckt: {obid}")
             message = f"🏠 Neues Inserat gefunden:\n{link}\n\nTitel: {title}"
             send_telegram_message(message)
             new_ids.append(obid)
