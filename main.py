@@ -3,6 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import datetime
 
 load_dotenv()
 
@@ -11,9 +12,16 @@ NO_GO_KEYWORDS = os.getenv("NO_GO_KEYWORDS", "möbliert,befristet,staffelmiete,z
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 LAST_IDS_FILE = "last_ids.txt"
+TEST_MODE = os.getenv("TEST_BOT", "false").lower() == "true"
+
+
+def log(message):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}")
 
 
 def fetch_results():
+    log("Starte Abruf von Immobilienscout24")
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(IS24_URL, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
@@ -25,6 +33,7 @@ def fetch_results():
         link = f"https://www.immobilienscout24.de/expose/{obid}"
         if not any(kw in title for kw in NO_GO_KEYWORDS):
             results.append((obid, link, title))
+    log(f"{len(results)} passende Ergebnisse gefunden")
     return results
 
 
@@ -44,10 +53,19 @@ def save_ids(ids):
 def send_telegram_message(text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "disable_web_page_preview": True}
-    requests.post(url, data=payload)
+    response = requests.post(url, data=payload)
+    if response.status_code == 200:
+        log("Telegram-Nachricht erfolgreich gesendet")
+    else:
+        log(f"Fehler beim Senden der Telegram-Nachricht: {response.text}")
 
 
 def main():
+    if TEST_MODE:
+        log("Testmodus aktiv – Sende Testnachricht an Telegram")
+        send_telegram_message("✅ Der ImmoBot ist erfolgreich verbunden und betriebsbereit.")
+        return
+
     last_ids = load_last_ids()
     current_results = fetch_results()
     new_ids = []
@@ -60,6 +78,9 @@ def main():
 
     if new_ids:
         save_ids(last_ids.union(new_ids))
+        log(f"{len(new_ids)} neue Inserate gespeichert")
+    else:
+        log("Keine neuen Inserate gefunden")
 
 
 if __name__ == "__main__":
