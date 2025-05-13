@@ -32,7 +32,9 @@ def fetch_results():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(IS24_URL, timeout=60000)
-        page.wait_for_timeout(5000)  # JS-Rendering warten
+        
+        # Warte auf ein spezifisches Element, das sicherstellt, dass die Seite vollständig geladen ist
+        page.wait_for_selector('[data-obid]', timeout=30000)  # Warte auf ein Element mit der data-obid, das normalerweise alle Inserate enthält
 
         html = page.content()
         soup = BeautifulSoup(html, "html.parser")
