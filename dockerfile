@@ -1,20 +1,17 @@
-# Basisimage
+# Verwende das vorgefertigte Playwright-Image
 FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 
-# Set Arbeitsverzeichnis
+# Setze Arbeitsverzeichnis
 WORKDIR /app
 
 # Kopiere Projektdateien
-COPY . /app
+COPY . .
 
 # Installiere Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
-# (optional) Debug: Zeige installierte Browser
-RUN ls -la /ms-playwright
+# Installiere die Playwright-Browser (zwingend notwendig!)
+RUN playwright install --with-deps
 
-# Setze Umgebungsvariable – zwinge Playwright, installierte Browser zu nutzen
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-# Standardbefehl
+# Starte das Skript
 CMD ["python", "main.py"]
