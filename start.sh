@@ -1,7 +1,6 @@
 #!/bin/bash
-
-echo "Installiere Chromium für Playwright..."
+echo "▶ Installiere Chromium für Playwright..."
 playwright install chromium
 
-echo "Starte Immobotscript..."
+echo "🚀 Starte Python-Skript"
 python main.py
