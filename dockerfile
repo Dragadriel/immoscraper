@@ -1,17 +1,12 @@
-# Verwende das vorgefertigte Playwright-Image
 FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 
-# Setze Arbeitsverzeichnis
 WORKDIR /app
 
-# Kopiere Projektdateien
 COPY . .
 
-# Installiere Python-Abhängigkeiten
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Installiere die Playwright-Browser (zwingend notwendig!)
-RUN playwright install --with-deps
+# Kein playwright install hier!
 
-# Starte das Skript
-CMD ["python", "main.py"]
+# Beim Start: erst Browser installieren, dann Skript ausführen
+CMD ["bash", "-c", "playwright install --with-deps && python main.py"]
