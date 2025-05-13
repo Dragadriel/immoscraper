@@ -1,4 +1,4 @@
 requests
 bs4
 python-telegram-bot==20.0
-# KEIN playwright hier notwendig!
+python-dotenv
