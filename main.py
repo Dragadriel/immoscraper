@@ -2,6 +2,10 @@
 import os
 import asyncio
 import datetime
+import subprocess
+
+# Fallback: Stelle sicher, dass die Playwright-Browser installiert sind
+subprocess.run(["playwright", "install", "--with-deps"], check=True)
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
