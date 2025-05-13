@@ -1,9 +1,11 @@
-# main.py
+# main.py (mit Playwright für JavaScript-Rendering)
 import os
-import requests
+import asyncio
+import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-import datetime
+from playwright.sync_api import sync_playwright
+import requests
 
 load_dotenv()
 
@@ -21,25 +23,33 @@ def log(message):
 
 
 def fetch_results():
-    log(f"Rufe Seite ab: {IS24_URL}")
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(IS24_URL, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
-    listings = soup.select('[data-obid]')
-    log(f"{len(listings)} Inserate auf der Seite gefunden")
-    results = []
-    filtered_out = 0
-    for listing in listings:
-        obid = listing.get("data-obid")
-        title = listing.get_text(" ", strip=True).lower()
-        link = f"https://www.immobilienscout24.de/expose/{obid}"
-        if not any(kw in title for kw in NO_GO_KEYWORDS):
-            results.append((obid, link, title))
-        else:
-            filtered_out += 1
-    log(f"{len(results)} passende Ergebnisse nach No-Go-Filter")
-    log(f"{filtered_out} Inserate aufgrund von No-Go-Keywords herausgefiltert")
-    return results
+    with sync_playwright() as p:
+        log(f"Starte Headless-Browser für Seite: {IS24_URL}")
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(IS24_URL, timeout=60000)
+        page.wait_for_timeout(5000)  # JS-Rendering warten
+
+        html = page.content()
+        soup = BeautifulSoup(html, "html.parser")
+        listings = soup.select('[data-obid]')
+        log(f"{len(listings)} Inserate auf der Seite gefunden")
+
+        results = []
+        filtered_out = 0
+        for listing in listings:
+            obid = listing.get("data-obid")
+            title = listing.get_text(" ", strip=True).lower()
+            link = f"https://www.immobilienscout24.de/expose/{obid}"
+            if not any(kw in title for kw in NO_GO_KEYWORDS):
+                results.append((obid, link, title))
+            else:
+                filtered_out += 1
+
+        log(f"{len(results)} passende Ergebnisse nach No-Go-Filter")
+        log(f"{filtered_out} Inserate aufgrund von No-Go-Keywords herausgefiltert")
+        browser.close()
+        return results
 
 
 def load_last_ids():
