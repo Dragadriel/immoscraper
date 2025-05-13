@@ -1,3 +1,4 @@
-requests
+playwright==1.44.0
 beautifulsoup4
 python-dotenv
+requests
