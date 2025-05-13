@@ -2,11 +2,15 @@ FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 
 WORKDIR /app
 
+# Kopiere die Anforderungen und installiere sie
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Kopiere den Rest des Anwendungscodes
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Setze die Umgebungsvariable für den Browserpfad
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Kein playwright install hier!
-
-# Beim Start: erst Browser installieren, dann Skript ausführen
-CMD ["bash", "-c", "playwright install --with-deps && python main.py"]
+CMD ["python", "main.py"]
