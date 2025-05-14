@@ -81,7 +81,7 @@ def send_telegram_message(message):
     if not TELEGRAM_TOKEN or not CHAT_ID:
         logger.error("Telegram-Konfiguration fehlt. Nachricht wird nicht gesendet.")
         return
-    
+
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         data = {
@@ -90,22 +90,25 @@ def send_telegram_message(message):
             "parse_mode": "Markdown"
         }
         response = requests.post(url, data=data)
+        
         if response.status_code != 200:
             logger.error(f"Fehler beim Abrufen der Seite: Status {response.status_code}")
-    
+
             # Erweiterte Debug-Ausgabe
             logger.debug(f"Response headers: {response.headers}")
-            logger.debug(f"User-Agent used: {headers['User-Agent']}")
+            logger.debug(f"User-Agent used: {random.choice(USER_AGENTS)}")  # Oder headers['User-Agent'], falls verfügbar
             logger.debug(f"Response content snippet:\n{response.text[:500]}")
 
-    # Ganze Seite speichern für Analyse
-    with open("debug_401.html", "w", encoding="utf-8") as f:
-        f.write(response.text)
+            # Ganze Seite speichern für Analyse
+            with open("debug_401.html", "w", encoding="utf-8") as f:
+                f.write(response.text)
+
             logger.error(f"Fehler beim Senden der Telegram-Nachricht: {response.text}")
         else:
             logger.info("Telegram-Nachricht erfolgreich gesendet")
     except Exception as e:
         logger.error(f"Fehler beim Senden der Telegram-Nachricht: {e}")
+
 
 def scrape_immoscout():
     """Scrapt ImmoScout24 nach neuen Wohnungsangeboten"""
@@ -147,6 +150,16 @@ def scrape_immoscout():
         # Status prüfen
         if response.status_code != 200:
             logger.error(f"Fehler beim Abrufen der Seite: Status {response.status_code}")
+    
+            # Erweiterte Debug-Ausgabe
+            logger.debug(f"Response headers: {response.headers}")
+            logger.debug(f"User-Agent used: {headers['User-Agent']}")
+            logger.debug(f"Response content snippet:\n{response.text[:500]}")
+
+            # Ganze Seite speichern für Analyse
+            with open("debug_401.html", "w", encoding="utf-8") as f:
+                f.write(response.text)
+
             return
         
         # Debug-Information
