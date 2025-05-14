@@ -1,15 +1,23 @@
-FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
+FROM python:3.9-slim
 
 WORKDIR /app
 
+# Systemabhängigkeiten installieren
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Kopiere Anforderungen und installiere sie
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Kopiere den Quellcode
+COPY *.py .
+# Erstelle Datenverzeichnis
+RUN mkdir -p /app/data
 
-# Wichtig: Playwright-Browser explizit installieren!
-RUN playwright install --with-deps
+# Umgebungsvariablen setzen
+ENV CACHE_FILE="/app/data/seen_listings.txt"
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
+# Setze den Eintragspunkt
 CMD ["python", "main.py"]
