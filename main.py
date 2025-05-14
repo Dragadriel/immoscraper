@@ -110,10 +110,14 @@ def scrape_immoscout():
         "User-Agent": random.choice(USER_AGENTS),
         "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1",
-        "Cache-Control": "max-age=0"
+        "Cache-Control": "max-age=0",
+        "Referer": "https://www.immobilienscout24.de/Suche/",
+        "DNT": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin"
     }
     
     try:
@@ -121,7 +125,14 @@ def scrape_immoscout():
         time.sleep(random.uniform(1, 3))
         
         # Anfrage senden
-        response = requests.get(SEARCH_URL, headers=headers, timeout=30)
+        session = requests.Session()
+        session.headers.update(headers)
+
+        # Optional: Erste Seite aufrufen, um evtl. Cookies zu setzen
+        session.get("https://www.immobilienscout24.de", timeout=15)
+
+        # Jetzt eigentliche Suche abrufen
+        response = session.get(SEARCH_URL, timeout=30)
         
         # Status prüfen
         if response.status_code != 200:
