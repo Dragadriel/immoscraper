@@ -26,5 +26,5 @@ ENV SCHEDULE_END_HOUR="23"
 ENV SCHEDULE_DAYS="mon-sun"
 ENV DATA_FILE="wohnungen.json"
 
-# Anwendung starten
-CMD ["python", "wbm_scraper.py"]
+# Anwendung starten (ENTRYPOINT anstelle von CMD, damit Railway es erkennt)
+ENTRYPOINT ["python", "wbm_scraper.py"]
