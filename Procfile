@@ -1,1 +1,1 @@
-web: python wbm_scraper.py
+worker: python wbm_scraper.py
